@@ -377,8 +377,13 @@ __posh_git_echo () {
         done <<< "`git status --porcelain 2>/dev/null`"
     fi
 
+    local separatorColor=
+
+    # $ITERM_BG is defined in /.bashrc.d/functions.bash
+    [ $ITERM_BG == "dark" ] && separatorColor="\e[0;37m" || separatorColor="\e[0;30m"
+
     local gitstring=
-    gitstring+="$(__posh_color '\e[0;37m') on"
+    gitstring+="$(__posh_color "\[$separatorColor\]") on"
     gitstring+="$(__posh_color '\e[0;32m') $isBare${b##refs/heads/}"
 
     # index status
@@ -387,21 +392,21 @@ __posh_git_echo () {
         local workingCount="$(( $filesAdded + $filesModified + $filesDeleted + $filesUnmerged ))"
 
         if [ "$workingCount" != 0 ] && [ "$indexCount" != 0 ] ; then
-            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color "\[$separatorColor\]") ["
             gitstring+="$(__posh_color '\e[0;33m')+$filesAdded ~$filesModified -$filesDeleted"
-            gitstring+="$(__posh_color '\e[0;37m') |"
+            gitstring+="$(__posh_color "\[$separatorColor\]") |"
             gitstring+="$(__posh_color '\e[0;32m') +$indexAdded ~$indexModified -$indexDeleted"
-            gitstring+="$(__posh_color '\e[0;37m')]"
+            gitstring+="$(__posh_color "\[$separatorColor\]")]"
 
         elif [ "$workingCount" != 0 ] ; then
-            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color "\[$separatorColor\]") ["
             gitstring+="$(__posh_color '\e[0;33m')+$filesAdded ~$filesModified -$filesDeleted"
-            gitstring+="$(__posh_color '\e[0;37m')]"
+            gitstring+="$(__posh_color "\[$separatorColor\]")]"
 
         elif [ "$indexCount" != 0 ] ; then
-            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color "\[$separatorColor\]") ["
             gitstring+="$(__posh_color '\e[0;32m')+$indexAdded ~$indexModified -$indexDeleted"
-            gitstring+="$(__posh_color '\e[0;37m')]"
+            gitstring+="$(__posh_color "\[$separatorColor\]")]"
         fi
     fi
 
