@@ -378,57 +378,33 @@ __posh_git_echo () {
     fi
 
     local gitstring=
-    local branchstring="$isBare${b##refs/heads/}"
-
-    # before-branch text
-    gitstring="$BeforeBackgroundColor$BeforeForegroundColor$BeforeText"
-
-    # branch
-    if (( $__POSH_BRANCH_BEHIND_BY > 0 && $__POSH_BRANCH_AHEAD_BY > 0 )); then
-        gitstring+="$BranchBehindAndAheadBackgroundColor$BranchBehindAndAheadForegroundColor$branchstring$BranchBehindAndAheadStatusSymbol"
-    elif (( $__POSH_BRANCH_BEHIND_BY > 0 )); then
-        gitstring+="$BranchBehindBackgroundColor$BranchBehindForegroundColor$branchstring$BranchBehindStatusSymbol"
-    elif (( $__POSH_BRANCH_AHEAD_BY > 0 )); then
-        gitstring+="$BranchAheadBackgroundColor$BranchAheadForegroundColor$branchstring$BranchAheadStatusSymbol"
-    elif (( $divergence_return_code )); then
-        # ahead and behind are both 0, but there was some problem while executing the command.
-        gitstring+="$BranchBackgroundColor$BranchForegroundColor$branchstring$BranchWarningStatusSymbol"
-    else
-        # ahead and behind are both 0, and the divergence was determined successfully
-        gitstring+="$BranchBackgroundColor$BranchForegroundColor$branchstring$BranchIdenticalStatusSymbol"
-    fi
+    gitstring+="$(__posh_color '\e[0;37m') on"
+    gitstring+="$(__posh_color '\e[0;32m') $isBare${b##refs/heads/}"
 
     # index status
     if $EnableFileStatus; then
         local indexCount="$(( $indexAdded + $indexModified + $indexDeleted + $indexUnmerged ))"
         local workingCount="$(( $filesAdded + $filesModified + $filesDeleted + $filesUnmerged ))"
-        if (( $indexCount != 0 )) || $ShowStatusWhenZero; then
-            gitstring+="$IndexBackgroundColor$IndexForegroundColor +$indexAdded ~$indexModified -$indexDeleted"
-        fi
-        if (( $indexUnmerged != 0 )); then
-            gitstring+=" $IndexBackgroundColor$IndexForegroundColor!$indexUnmerged"
-        fi
-        if (( $indexCount != 0 && ($workingCount != 0 || $ShowStatusWhenZero) )); then
-            gitstring+="$DelimBackgroundColor$DelimForegroundColor$DelimText"
-        fi
-        if (( $workingCount != 0 )) || $ShowStatusWhenZero; then
-            gitstring+="$WorkingBackgroundColor$WorkingForegroundColor +$filesAdded ~$filesModified -$filesDeleted"
-        fi
-        if (( $filesUnmerged != 0 )); then
-            gitstring+=" $WorkingBackgroundColor$WorkingForegroundColor!$filesUnmerged"
+
+        if [ "$workingCount" != 0 ] && [ "$indexCount" != 0 ] ; then
+            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color '\e[0;33m')+$filesAdded ~$filesModified -$filesDeleted"
+            gitstring+="$(__posh_color '\e[0;37m') |"
+            gitstring+="$(__posh_color '\e[0;32m') +$indexAdded ~$indexModified -$indexDeleted"
+            gitstring+="$(__posh_color '\e[0;37m')]"
+
+        elif [ "$workingCount" != 0 ] ; then
+            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color '\e[0;33m')+$filesAdded ~$filesModified -$filesDeleted"
+            gitstring+="$(__posh_color '\e[0;37m')]"
+
+        elif [ "$indexCount" != 0 ] ; then
+            gitstring+="$(__posh_color '\e[0;37m') ["
+            gitstring+="$(__posh_color '\e[0;32m')+$indexAdded ~$indexModified -$indexDeleted"
+            gitstring+="$(__posh_color '\e[0;37m')]"
         fi
     fi
-    gitstring+="${rebase:+$RebaseForegroundColor$RebaseBackgroundColor$rebase}"
 
-    # after-branch text
-    gitstring+="$AfterBackgroundColor$AfterForegroundColor$AfterText"
-
-    if $ShowStashState && $hasStash; then
-        gitstring+="$StashBackgroundColor$StashForegroundColor"$StashText
-        if $ShowStashCount; then
-            gitstring+=$stashCount
-        fi
-    fi
     gitstring+="$DefaultBackgroundColor$DefaultForegroundColor"
     echo "$gitstring"
 }
