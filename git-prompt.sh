@@ -384,7 +384,14 @@ __posh_git_echo () {
 
     local gitstring=
     gitstring+="$(__posh_color "\[$separatorColor\]") on"
-    gitstring+="$(__posh_color '\e[0;32m') $isBare${b##refs/heads/}"
+
+    if (( $__POSH_BRANCH_BEHIND_BY > 0 || $__POSH_BRANCH_AHEAD_BY > 0 )); then
+      gitstring+="$(__posh_color '\e[0;31m')"
+    else
+      gitstring+="$(__posh_color '\e[0;32m')"
+    fi
+
+    gitstring+=" $isBare${b##refs/heads/}"
 
     # index status
     if $EnableFileStatus; then
